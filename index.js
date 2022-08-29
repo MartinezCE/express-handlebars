@@ -9,6 +9,8 @@ const server = app.listen(PORT, () => {
 
 server.on('error', (error) => console.log(`Error en servidor ${error}`));
 app.use('/public', express.static(__dirname + '/public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.set('view engine', 'hbs');
 app.set('views', './views');
@@ -21,51 +23,6 @@ app.engine(
         partialsDir: __dirname + '/views/partials',
     })
 );
-
-
-class Products {
-    constructor(products) {
-        this.products = [...products];
-        //this.products = products;
-    }
-
-    getAll() {
-        return this.products;
-    }
-    getById(id) {
-        return this.products.find((item) => item.id == id);
-    }
-    addOne(product) {
-        const lastItem = this.products[this.products.length - 1];
-        let lastId = 1;
-        if (lastItem) {
-            lastId = lastItem.id + 1;
-        }
-        product.id = lastId;
-        this.products.push(product);
-        return this.products[this.products.length - 1];
-    }
-
-    updateOne(id, product) {
-        const productToInsert = {...product, id };
-
-        for (let i = 0; i < this.products.length; i++) {
-            if (this.products[i].id == id) {
-                this.products[i] = productToInsert;
-                return productToInsert;
-            }
-        }
-        return undefined;
-    }
-    deleteById(id) {
-        const foundProduct = this.getById(id);
-        if (foundProduct) {
-            this.products = this.products.filter((item) => item.id != id);
-            return id;
-        }
-        return undefined;
-    }
-}
 
 
 let productsHC = [
@@ -109,7 +66,7 @@ app.post('/products', (req, res) => {
     const { body } = req;
     console.log("object", body)
     body.price = parseFloat(body.price);
-    const products = new Products(productsHC);
-    const productoGenerado = products.addOne(body);
+    productsHC.push(body)
+    const productoGenerado = body
     res.json({ success: 'ok', new: productoGenerado });
 });
